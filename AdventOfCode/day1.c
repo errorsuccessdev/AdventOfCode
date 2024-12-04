@@ -1,5 +1,3 @@
-// TODO: Would like to remove recursion in sortSmallestToLargest
-
 #include <stdio.h>
 #include <assert.h>
 #include "day1inputs.h"
@@ -34,15 +32,34 @@ int absoluteValue(int number)
     return number;
 }
 
+// Assumes array is already sorted smallest to largest
+int numberOfTimesXAppearsInArray(int x, int* array, int arraySize)
+{
+    int numTimes = 0;
+    for (int i = 0; i < arraySize; i++)
+    {
+        if (array[i] == x)
+        {
+            numTimes += 1;
+        }
+        else if (array[i] > x)
+        {
+            break;
+        }
+    }
+    return numTimes;
+}
+
 int main()
 {
     sortSmallestToLargest(array1, ARRAYSIZE);
     sortSmallestToLargest(array2, ARRAYSIZE);
-    int totalDifference = 0;
+    int similarity = 0;
     for (int i = 0; i < ARRAYSIZE; i++)
     {
-        totalDifference += absoluteValue(array1[i] - array2[i]);
+        int x = array1[i];
+        int numTimes = numberOfTimesXAppearsInArray(x, array2, ARRAYSIZE);
+        similarity += (x * numTimes);
     }
-    assert(totalDifference == ANSWER);
-    printf("Total difference %d\n", totalDifference);
+    printf("Similarity score: %d\n", similarity);
 }
