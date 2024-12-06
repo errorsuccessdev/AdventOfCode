@@ -60,42 +60,27 @@ bool isSeriesSafe(int* array, int startIndex, int endIndex)
 	return true;
 }
 
-// This is probably the worst possible way to do this ever
-int convertToBigNumber(int* numbers, int numbersCount)
-{
-	int ret = 0;
-	int multiplyBy = 1;
-	for (int i = numbersCount - 1; i >= 0; i--)
-	{
-		ret += numbers[i] * multiplyBy;
-		multiplyBy *= 10;
-	}
-	return ret;
-}
-
 int main()
 {
 	FILE* input = fopen(FILEPATH, "r");
 	assert(input);
 
-	int count = 0;
-	int numbersCount = 0;
 	int array[ARRAYSIZE] = { 0 };
-	int numbers[ARRAYSIZE] = { 0 };
+	int count = 0;
 	int numSafe = 0;
+	int tempValue = 0;
 	while (1) 
 	{
 		char c = fgetc(input);
 		if (c >= '0' && c <= '9')
 		{
-			numbers[numbersCount] = c - '0';
-			numbersCount += 1;
+			tempValue = (tempValue * 10) + (c - '0');
 		}
 		else if (c == ' ' || c == '\n')
 		{
-			array[count] = convertToBigNumber(numbers, numbersCount);
+			array[count] = tempValue;
 			count += 1;
-			numbersCount = 0;
+			tempValue = 0;
 		}
 		if (c == '\n')
 		{
