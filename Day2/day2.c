@@ -1,13 +1,24 @@
-// TODO: Simplify code by removing the need for convertToBigNumber
-//		(ret * 10 + array[i])
+// TODO: Fix algorithm so that we can remove the first number in the 
+//			array and recheck it
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
 #include "day2answer.h"
 
+//#define DEBUG_OUTPUT
+//#define DEBUG_FILE
+
+#ifdef  DEBUG_FILE
+#define FILEPATH "C:\\Users\\ann\\source\\repos\\AdventOfCode\\Day2\\debug_input.txt"
+#elif defined(DEBUG_EXCLUDE_KNOWN_CORRECT)
+#define FILEPATH "C:\\Users\\ann\\source\\repos\\AdventOfCode\\Day2\\input_exclude_known_correct.txt"
+#else
 #define FILEPATH "C:\\Users\\ann\\source\\repos\\AdventOfCode\\Day2\\input.txt"
+#endif //  DEBUG_FILE
+
 #define ARRAYSIZE 1024
 #define OR ||
+#define AND &&
 
 int absoluteValue(int number)
 {
@@ -27,7 +38,7 @@ bool isSeriesSafe(int* array, int startIndex, int endIndex)
 	{
 		int priorNumber = array[i - 1]; // This is seems weird
 		int difference = absoluteValue(array[i] - priorNumber);
-		if ((difference == 0) OR (difference > 3))
+		if ((difference == 0) OR(difference > 3))
 		{
 			return false;
 		}
@@ -60,6 +71,65 @@ bool isSeriesSafe(int* array, int startIndex, int endIndex)
 	return true;
 }
 
+void uglyDebugOutputManager(bool isSafe)
+{
+	if (isSafe)
+	{
+#ifdef DEBUG_OUTPUT
+		printf("Series is safe\n");
+#endif // DEBUG_OUTPUT
+	}
+	else
+	{
+#ifdef DEBUG_OUTPUT
+		printf("Series is unsafe\n");
+#endif // DEBUG_OUTPUT
+	}
+}
+
+void copyOneArrayIntoAnotherButSkipOneElement(
+	int* copyFrom, int* copyTo, int size, int skipMe
+)
+{
+	int copyFromIndex = 0;
+	int copyToIndex = 0;
+	int numLeftToCopy = size;
+	while (numLeftToCopy > 0)
+	{
+		if (copyFromIndex == skipMe)
+		{
+			copyFromIndex += 1;
+			numLeftToCopy -= 1;
+		}
+		copyTo[copyToIndex] = copyFrom[copyFromIndex];
+		copyToIndex += 1;
+		copyFromIndex += 1;
+		numLeftToCopy -= 1;
+	}
+}
+
+bool bruteForceSeries(int* series, int size)
+{
+	bool isSafe = isSeriesSafe(series, 0, size);
+	if (isSafe)
+	{
+		return true;
+	}
+	int tempSeries[ARRAYSIZE]; // Ugh, C sucks!
+	for (int i = 0; i < size; i++)
+	{
+		copyOneArrayIntoAnotherButSkipOneElement(
+			series, tempSeries, size, i
+		);
+		isSafe = isSeriesSafe(tempSeries, 0, size - 1);
+		if (isSafe)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 int main()
 {
 	FILE* input = fopen(FILEPATH, "r");
@@ -69,9 +139,12 @@ int main()
 	int count = 0;
 	int numSafe = 0;
 	int tempValue = 0;
-	while (1) 
+	while (1)
 	{
 		char c = fgetc(input);
+#ifdef DEBUG_OUTPUT
+		putchar(c);
+#endif // DEBUG_OUTPUT
 		if (c >= '0' && c <= '9')
 		{
 			tempValue = (tempValue * 10) + (c - '0');
@@ -84,11 +157,12 @@ int main()
 		}
 		if (c == '\n')
 		{
-			bool isSafe = isSeriesSafe(array, 0, count);
+			bool isSafe = bruteForceSeries(array, count);
 			if (isSafe)
 			{
 				numSafe += 1;
 			}
+			uglyDebugOutputManager(isSafe);
 			count = 0;
 		}
 		else if (c == EOF)
@@ -97,7 +171,6 @@ int main()
 		}
 	}
 	printf("There were %d safe reports\n", numSafe);
-	assert(numSafe == ANSWER);
 
 	int result = fclose(input);
 	assert(result == 0);
