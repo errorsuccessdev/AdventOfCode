@@ -19,11 +19,25 @@ int main()
 
 	char* mulStart = "mul(";
 	int mulStartIndex = 0;
+	const int mulStartLength = 4;
 	int multiply1 = 0;
 	bool inMulPart1 = false;
 	int multiply2 = 0;
 	bool inMulPart2 = false;
 	int mulTotal = 0;
+
+	bool mulEnabled = true;
+	char* instStart = "do";
+	const int instStartLength = 2;
+	int instStartIndex = 0;
+	bool inInstStart = false;
+	char* doInst = "()";
+	const int doInstLength = 2;
+	int doInstIndex = 0;
+	char* dontInst = "n't()";
+	const int dontInstLength = 5;
+	int dontInstIndex = 0;
+	bool inDontInst = false;
 
 	while (1)
 	{
@@ -32,17 +46,50 @@ int main()
 		{
 			break;
 		}
-		else if (c == mulStart[mulStartIndex])
+		else if (c == instStart[instStartIndex])
 		{
-			mulStartIndex++;
-			if (mulStartIndex > 3)
+			instStartIndex += 1;
+			if (instStartIndex >= instStartLength)
+			{
+				inInstStart = true;
+			}
+			continue;
+		}
+		else if (c == doInst[doInstIndex] AND
+			inInstStart AND
+			(inDontInst == false))
+		{
+			doInstIndex += 1;
+			if (doInstIndex >= doInstLength)
+			{
+				mulEnabled = true;
+			}
+			continue;
+		}
+		else if (c == dontInst[dontInstIndex] AND
+			inInstStart)
+		{
+			inDontInst = true;
+			dontInstIndex += 1;
+			if (dontInstIndex >= dontInstLength)
+			{
+				mulEnabled = false;
+			}
+			continue;
+		}
+		else if (c == mulStart[mulStartIndex] AND
+			mulEnabled)
+		{
+			mulStartIndex += 1;
+			if (mulStartIndex >= mulStartLength)
 			{
 				inMulPart1 = true;
 			}
 			continue;
 		}
 		else if ('0' <= c AND
-			c <= '9')
+			c <= '9' AND
+			mulEnabled)
 		{
 			if (inMulPart1)
 			{
@@ -71,6 +118,11 @@ int main()
 		inMulPart2 = false;
 		multiply1 = 0;
 		multiply2 = 0;
+		inInstStart = false;
+		dontInstIndex = 0;
+		doInstIndex = 0;
+		instStartIndex = 0;
+		inDontInst = false;
 	}
 
 	printf("Mul total: %d\n", mulTotal);
